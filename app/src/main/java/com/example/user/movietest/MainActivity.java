@@ -17,12 +17,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.example.user.movietest.R;
 public class MainActivity extends Activity {
 
     RecyclerView recyclerView;
     MyAdapter myAdapter;
+    Tools tools = new Tools();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +63,11 @@ public class MainActivity extends Activity {
                                 String name=title.get(i).select("a.title").text() ;
                                 String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+ "    "+
                                         title.get(i).select("div.subtitle-container").select("a[class=subtitle subtitle-movie-category]").text();//選擇第i個後選取所有為td的Tag
+                                String link = doc.select("img").get(i).attr("src");
 
                                 item.put("name",name);
                                 item.put("type",type);
+                                item.put("link",link);
                                 myAdapter.addItem(item);
 
                             }
@@ -85,6 +92,7 @@ public class MainActivity extends Activity {
 
             ArrayList<HashMap<String,String>> list=new ArrayList<HashMap<String,String>>();
 
+
             public MyAdapter(ArrayList<HashMap<String,String>> newlist) {
                 // TODO 自动生成的构造函数存根
                 list = newlist;
@@ -107,6 +115,19 @@ public class MainActivity extends Activity {
                 holder.cls.setText(list.get(position).get("type"));
 
                 //設定圖片
+                holder.link.setTag(list.get(position).get("link"));
+                setImg(holder.link,list.get(position).get("link"));
+
+                //
+                holder.ll.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(MainActivity.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
+
+
+                        ///Intent activity
+                    }
+                });
             }
 
             @Override
@@ -116,12 +137,19 @@ public class MainActivity extends Activity {
 
             public class ViewHolder extends RecyclerView.ViewHolder {
                 public TextView name,cls;
+                public ImageView link;
+                public LinearLayout ll;
 
                 public ViewHolder(View itemView) {
                     super(itemView);
                     name = (TextView) itemView.findViewById(R.id.name);
                     cls = (TextView) itemView.findViewById(R.id.cls);
+                    link = (ImageView) itemView.findViewById(R.id.link);
+                    ll= (LinearLayout) itemView.findViewById(R.id.ll);
                 }
+            }
+            void setImg(ImageView img, String ImgURL){
+                tools.imageLoading(MainActivity.this,ImgURL,img);
             }
         }
 }
