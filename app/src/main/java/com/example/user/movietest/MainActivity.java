@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -58,17 +59,22 @@ public class MainActivity extends Activity {
 
                             Document doc = Jsoup.connect("https://play.google.com/store/movies/top?hl=zh_TW").get();
                             Elements title = doc.select("div.details"); //抓取為tr且有class屬性的所有Tag
-                            for(int i=0;i<title.size();i++){ //用FOR個別抓取選定的Tag內容
+                            for(int i=0;i<20;i++){ //用FOR個別抓取選定的Tag內容
                                 HashMap<String,String> item = new HashMap<String,String>();
-                                String name=title.get(i).select("a.title").text() ;
+                                String name = title.get(i).select("a.title").text() ;
                                 String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+ "    "+
                                         title.get(i).select("div.subtitle-container").select("a[class=subtitle subtitle-movie-category]").text();//選擇第i個後選取所有為td的Tag
                                 String link = doc.select("img").get(i).attr("src");
 
+                                String detail = title.get(i).select("div.description").text();
+
                                 item.put("name",name);
                                 item.put("type",type);
                                 item.put("link",link);
+                                item.put("detail",detail);
                                 myAdapter.addItem(item);
+                                Log.d("878787878787",detail);
+                                Log.d("777777777",name);
 
                             }
                             runOnUiThread(new Runnable() {
@@ -114,6 +120,7 @@ public class MainActivity extends Activity {
                 holder.name.setText(list.get(position).get("name"));
                 holder.cls.setText(list.get(position).get("type"));
 
+
                 //設定圖片
                 holder.link.setTag(list.get(position).get("link"));
                 setImg(holder.link,list.get(position).get("link"));
@@ -126,6 +133,12 @@ public class MainActivity extends Activity {
 
 
                         ///Intent activity
+                        Intent intent = new Intent(MainActivity.this,Detail.class);
+                        intent.putExtra("name",list.get(position).get("name"));
+                        intent.putExtra("type",list.get(position).get("type"));
+                        intent.putExtra("link",list.get(position).get("link"));
+                        intent.putExtra("detail",list.get(position).get("detail"));
+                        startActivity(intent);
                     }
                 });
             }
