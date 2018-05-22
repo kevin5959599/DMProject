@@ -62,7 +62,7 @@ public class MainActivity extends Activity {
                             for(int i=0;i<20;i++){ //用FOR個別抓取選定的Tag內容
                                 HashMap<String,String> item = new HashMap<String,String>();
                                 String name = title.get(i).select("a.title").text() ;
-                                String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+ "    "+
+                                String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+
                                         title.get(i).select("div.subtitle-container").select("a[class=subtitle subtitle-movie-category]").text();//選擇第i個後選取所有為td的Tag
                                 String link = doc.select("img").get(i).attr("src");
 
@@ -121,15 +121,18 @@ public class MainActivity extends Activity {
                 holder.cls.setText(list.get(position).get("type"));
 
 
+
+
                 //設定圖片
                 holder.link.setTag(list.get(position).get("link"));
                 setImg(holder.link,list.get(position).get("link"));
 
                 //
                 holder.ll.setOnClickListener(new View.OnClickListener() {
+
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(MainActivity.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MainActivity.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
 
 
                         ///Intent activity

@@ -24,19 +24,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by Blue_bell on 2018/5/20.
+ * Created by Blue_bell on 2018/5/21.
  */
 
-public class KoreanDrama_Hot extends Activity {
+public class YahooMovie extends Activity {
     RecyclerView recyclerView;
-    KoreanDrama_Hot.MyAdapter myAdapter;
+    YahooMovie.MyAdapter myAdapter;
     Tools tools = new Tools();
-    String[] b;
-    String a;
-    String[] d;
-    String c;
-    String[] f;
-    String e;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +38,7 @@ public class KoreanDrama_Hot extends Activity {
         setContentView(R.layout.activity_main);
 
         recyclerView = (RecyclerView)findViewById(R.id.main_rv);
-        new KoreanDrama_Hot.HttpAsynTask().execute();
+        new YahooMovie.HttpAsynTask().execute();
     }
 
 
@@ -63,56 +57,27 @@ public class KoreanDrama_Hot extends Activity {
                     try {
                         myAdapter = null;
                         ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
-                        myAdapter = new KoreanDrama_Hot.MyAdapter(list);
+                        myAdapter = new YahooMovie.MyAdapter(list);
 
-                        Document doc = Jsoup.connect("https://www.y3600.com/hanju/renqi/").get();
-                        Elements title = doc.select("div.m-ddone"); //抓取為tr且有class屬性的所有Tag
-                        for(int i=0;i<1;i++){ //用FOR個別抓取選定的Tag內容
+                        Document doc = Jsoup.connect("https://movies.yahoo.com.tw/?guccounter=1").get();
+                        Elements title = doc.select("ul.ranking_list_r"); //抓取為tr且有class屬性的所有Tag
+                        for(int i=0;i<20;i++){ //用FOR個別抓取選定的Tag內容
                             HashMap<String,String> item = new HashMap<String,String>();
-                            String name = title.get(i).select("UL").select("B").text();
-                            String actor = title.get(i).select("LI.zyy").text();//選擇第i個後選取所有為td的Tag
-                            String link = doc.select("IMG").get(i).attr("src");
+                            String name = title.get(i).select("a").text() ;
 
-                            String detail = title.get(i).select("div.description").text();
 
-                            b = name.split(" ");
-                            for(int k=0;k<b.length;k++){
-                                System.out.println("array["+k+"] = "+b[k]);
-                            }
-                            d = actor.split(" ");
-                            f = link.split(" ");
-                            for(int j=0;j<29;j++) {
-                                String a = b[j];
-                                String c = d [j] ;
-                                 Log.d("55555555",a);
-                                 Log.d("444444",c);
-                                item.put("name",a);
-                                Log.d("222222222","222222222");
-                                item.put("actor",c);
-                                Log.d("111111111","111111111");
-                                 myAdapter.addItem(item);
-                                Log.d("0000000000","000000000");
-                                /*e = f[j];
-                                 Log.d("33333",e);
-                                 item.put("link",link);*/
-
-                            }
-                            //item.put("name",);
-                            //item.put("actor",actor);
-                            item.put("link",link);
-                            item.put("detail",detail);
-                            Log.d("878787878787",detail);
-                            Log.d("6666666",actor);
+                            item.put("name",name);
+                            myAdapter.addItem(item);
+                            //Log.d("878787878787",detail);
                             Log.d("777777777",name);
-                            Log.d("8888888",link);
 
                         }
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 recyclerView.setAdapter(myAdapter);
-                                recyclerView.addItemDecoration(new DividerItemDecoration(KoreanDrama_Hot.this, DividerItemDecoration.VERTICAL));
-                                recyclerView.setLayoutManager(new LinearLayoutManager(KoreanDrama_Hot.this));
+                                recyclerView.addItemDecoration(new DividerItemDecoration(YahooMovie.this, DividerItemDecoration.VERTICAL));
+                                recyclerView.setLayoutManager(new LinearLayoutManager(YahooMovie.this));
                             }
                         });
                     } catch (Exception e) {
@@ -124,7 +89,7 @@ public class KoreanDrama_Hot extends Activity {
 
         }
     }
-    public class MyAdapter extends RecyclerView.Adapter<KoreanDrama_Hot.MyAdapter.ViewHolder>{
+    public class MyAdapter extends RecyclerView.Adapter<YahooMovie.MyAdapter.ViewHolder>{
 
         ArrayList<HashMap<String,String>> list=new ArrayList<HashMap<String,String>>();
 
@@ -138,17 +103,17 @@ public class KoreanDrama_Hot extends Activity {
         }
 
         @Override
-        public KoreanDrama_Hot.MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public YahooMovie.MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_rv,parent,false);
-            KoreanDrama_Hot.MyAdapter.ViewHolder viewHolder = new KoreanDrama_Hot.MyAdapter.ViewHolder(view);
+            YahooMovie.MyAdapter.ViewHolder viewHolder = new YahooMovie.MyAdapter.ViewHolder(view);
             return viewHolder;
         }
 
         @Override
-        public void onBindViewHolder(KoreanDrama_Hot.MyAdapter.ViewHolder holder, final int position) {
+        public void onBindViewHolder(YahooMovie.MyAdapter.ViewHolder holder, final int position) {
 
             holder.name.setText(list.get(position).get("name"));
-            holder.cls.setText(list.get(position).get("actor"));
+            holder.cls.setText(list.get(position).get("type"));
 
 
             //設定圖片
@@ -159,13 +124,13 @@ public class KoreanDrama_Hot extends Activity {
             holder.ll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(KoreanDrama_Hot.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(YahooMovie.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
 
 
                     ///Intent activity
-                    Intent intent = new Intent(KoreanDrama_Hot.this,Detail.class);
+                    Intent intent = new Intent(YahooMovie.this,Detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
-                    intent.putExtra("actor",list.get(position).get("actor"));
+                    intent.putExtra("type",list.get(position).get("type"));
                     intent.putExtra("link",list.get(position).get("link"));
                     intent.putExtra("detail",list.get(position).get("detail"));
                     startActivity(intent);
@@ -192,7 +157,7 @@ public class KoreanDrama_Hot extends Activity {
             }
         }
         void setImg(ImageView img, String ImgURL){
-            tools.imageLoading(KoreanDrama_Hot.this,ImgURL,img);
+            tools.imageLoading(YahooMovie.this,ImgURL,img);
         }
     }
 }

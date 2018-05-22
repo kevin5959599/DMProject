@@ -44,13 +44,22 @@ public class Detail extends Activity {
         tools.imageLoading(Detail.this,ImgURL,img);
     }
     void initialView(){
+
+        String[] namesplit = getIntent().getStringExtra("name").split(" ");
+        for(int i=0;i<namesplit.length;i++){
+            System.out.println("array["+i+"] = "+namesplit[i]);
+            Log.d("5555555",namesplit[i]);
+        }
+        String newname = namesplit[1];
+
+
         name = (TextView)findViewById(R.id.name);
         cls = (TextView) findViewById(R.id.cls);
         link = (ImageView) findViewById(R.id.link);
         detail = (TextView) findViewById(R.id.detail);
 
-        name.setText(getIntent().getStringExtra("name"));
-        cls.setText(getIntent().getStringExtra("type"));
+        name.setText(newname);
+        cls.setText("("+getIntent().getStringExtra("type")+")");
         detail.setText(getIntent().getStringExtra("detail"));
         link.setTag(getIntent().getStringExtra("link"));
         setImg(link,getIntent().getStringExtra("link"));
