@@ -124,7 +124,7 @@ public class Movie_Hot extends Activity {
                     }
                 }).start();
 
-            }
+            }//
         }
         new HttpAsynTask().execute();
     }
