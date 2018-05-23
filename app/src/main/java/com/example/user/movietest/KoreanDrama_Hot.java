@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,19 +30,14 @@ public class KoreanDrama_Hot extends Activity {
     RecyclerView recyclerView;
     KoreanDrama_Hot.MyAdapter myAdapter;
     Tools tools = new Tools();
-    String[] b;
-    String a;
-    String[] d;
-    String c;
-    String[] f;
-    String e;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.krdrama_detail);
 
-        recyclerView = (RecyclerView)findViewById(R.id.main_rv);
+        recyclerView = (RecyclerView)findViewById(R.id.krdrama_rv);
         new KoreanDrama_Hot.HttpAsynTask().execute();
     }
 
@@ -67,44 +61,20 @@ public class KoreanDrama_Hot extends Activity {
 
                         Document doc = Jsoup.connect("https://www.y3600.com/hanju/renqi/").get();
                         Elements title = doc.select("div.m-ddone"); //抓取為tr且有class屬性的所有Tag
-                        for(int i=0;i<1;i++){ //用FOR個別抓取選定的Tag內容
+                        for(int i=0;i<title.get(0).select("UL").size();i++){ //用FOR個別抓取選定的Tag內容
                             HashMap<String,String> item = new HashMap<String,String>();
-                            String name = title.get(i).select("UL").select("B").text();
-                            String actor = title.get(i).select("LI.zyy").text();//選擇第i個後選取所有為td的Tag
-                            String link = doc.select("IMG").get(i).attr("src");
+                            String name = title.get(0).select("UL").get(i).select("B").text();
+                            String actor = title.get(0).select("UL").get(i).select("LI.zyy").text();//選擇第i個後選取所有為td的Tag
+                            String link = title.get(0).select("UL").get(i).select("IMG").attr("src");
+                            String detaillink = title.get(0).select("UL").get(i).select("A").attr("href");
 
-                            String detail = title.get(i).select("div.description").text();
 
-                            b = name.split(" ");
-                            for(int k=0;k<b.length;k++){
-                                System.out.println("array["+k+"] = "+b[k]);
-                            }
-                            d = actor.split(" ");
-                            f = link.split(" ");
-                            for(int j=0;j<29;j++) {
-                                String a = b[j];
-                                String c = d [j] ;
-                                 Log.d("55555555",a);
-                                 Log.d("444444",c);
-                                item.put("name",a);
-                                Log.d("222222222","222222222");
-                                item.put("actor",c);
-                                Log.d("111111111","111111111");
-                                 myAdapter.addItem(item);
-                                Log.d("0000000000","000000000");
-                                /*e = f[j];
-                                 Log.d("33333",e);
-                                 item.put("link",link);*/
+                            item.put("name",name);
+                            item.put("actor",actor);
+                            item.put("link","https:"+link);
+                            item.put("detaillink",detaillink);
 
-                            }
-                            //item.put("name",);
-                            //item.put("actor",actor);
-                            item.put("link",link);
-                            item.put("detail",detail);
-                            Log.d("878787878787",detail);
-                            Log.d("6666666",actor);
-                            Log.d("777777777",name);
-                            Log.d("8888888",link);
+                            myAdapter.addItem(item);
 
                         }
                         runOnUiThread(new Runnable() {
@@ -117,6 +87,12 @@ public class KoreanDrama_Hot extends Activity {
                         });
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                new KoreanDrama_Hot.HttpAsynTask().execute();
+                            }
+                        });
                         e.printStackTrace();
                     }
                 }
@@ -139,8 +115,8 @@ public class KoreanDrama_Hot extends Activity {
 
         @Override
         public KoreanDrama_Hot.MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_rv,parent,false);
-            KoreanDrama_Hot.MyAdapter.ViewHolder viewHolder = new KoreanDrama_Hot.MyAdapter.ViewHolder(view);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.krdrama_rv,parent,false);
+            KoreanDrama_Hot.MyAdapter.ViewHolder viewHolder = new MyAdapter.ViewHolder(view);
             return viewHolder;
         }
 
@@ -159,15 +135,12 @@ public class KoreanDrama_Hot extends Activity {
             holder.ll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(KoreanDrama_Hot.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
-
-
                     ///Intent activity
-                    Intent intent = new Intent(KoreanDrama_Hot.this,Detail.class);
+                    Intent intent = new Intent(KoreanDrama_Hot.this,KRDrama_detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
                     intent.putExtra("actor",list.get(position).get("actor"));
                     intent.putExtra("link",list.get(position).get("link"));
-                    intent.putExtra("detail",list.get(position).get("detail"));
+                    intent.putExtra("detaillink",list.get(position).get("detaillink"));
                     startActivity(intent);
                 }
             });

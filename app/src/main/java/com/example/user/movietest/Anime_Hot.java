@@ -3,6 +3,7 @@ package com.example.user.movietest;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,31 +15,28 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by Blue_bell on 2018/5/21.
- */
-
-public class YahooMovie extends Activity {
+public class Anime_Hot extends Activity {
     RecyclerView recyclerView;
-    YahooMovie.MyAdapter myAdapter;
+    MyAdapter myAdapter;
     Tools tools = new Tools();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.jpdrama_hot);
 
-        recyclerView = (RecyclerView)findViewById(R.id.main_rv);
-        new YahooMovie.HttpAsynTask().execute();
+        recyclerView = (RecyclerView)findViewById(R.id.jpdrama_rv);
+        new HttpAsynTask().execute();
     }
 
 
@@ -57,45 +55,41 @@ public class YahooMovie extends Activity {
                     try {
                         myAdapter = null;
                         ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
-                        myAdapter = new YahooMovie.MyAdapter(list);
+                        myAdapter = new MyAdapter(list);
 
-                        final Document doc = Jsoup.connect("https://movies.yahoo.com.tw/?guccounter=1").get();
-                        final Elements title = doc.select("div.title"); //抓取為tr且有class屬性的所有Tag
+                        Document doc = Jsoup.connect("https://ani.gamer.com.tw/animeList.php?sort=1&c=0").get();
 
+                        Element title = doc.select("ul.anime_list").get(0); //抓取為tr且有class屬性的所有Tag
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Log.d("777777777","=" + doc);
-
-                            }
-                        });
-                        for(int i=0;i<title.size();i++){ //用FOR個別抓取選定的Tag內容
+                        for(int i=0;i<title.select("b").size();i++){ //用FOR個別抓取選定的Tag內容
                             HashMap<String,String> item = new HashMap<String,String>();
-                            String name = title.get(i).select("span").text() ;
-
+                            String name = title.select("b").get(i).text();
+                            String detaillink = title.select("a").get(i).attr("href");
+                            String link = title.select("div[class=pic lazyload]").get(i).attr("data-bg");
 
                             item.put("name",name);
-                            myAdapter.addItem(item);
-                            //Log.d("878787878787",detail);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                            Log.d("777777777","=" +String.valueOf(title.size()));
+                            item.put("link", link);
+                            item.put("detaillink","https://ani.gamer.com.tw/"+detaillink);
 
-                                }
-                            });
+                            myAdapter.addItem(item);
+
                         }
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 recyclerView.setAdapter(myAdapter);
-                                recyclerView.addItemDecoration(new DividerItemDecoration(YahooMovie.this, DividerItemDecoration.VERTICAL));
-                                recyclerView.setLayoutManager(new LinearLayoutManager(YahooMovie.this));
+                                recyclerView.addItemDecoration(new DividerItemDecoration(Anime_Hot.this, DividerItemDecoration.VERTICAL));
+                                recyclerView.setLayoutManager(new LinearLayoutManager(Anime_Hot.this));
                             }
                         });
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                new HttpAsynTask().execute();
+                            }
+                        });
                         e.printStackTrace();
                     }
                 }
@@ -103,7 +97,7 @@ public class YahooMovie extends Activity {
 
         }
     }
-    public class MyAdapter extends RecyclerView.Adapter<YahooMovie.MyAdapter.ViewHolder>{
+    public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>{
 
         ArrayList<HashMap<String,String>> list=new ArrayList<HashMap<String,String>>();
 
@@ -117,17 +111,17 @@ public class YahooMovie extends Activity {
         }
 
         @Override
-        public YahooMovie.MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_rv,parent,false);
-            YahooMovie.MyAdapter.ViewHolder viewHolder = new YahooMovie.MyAdapter.ViewHolder(view);
+        public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.jpdrama_rv,parent,false);
+            MyAdapter.ViewHolder viewHolder = new MyAdapter.ViewHolder(view);
             return viewHolder;
         }
 
         @Override
-        public void onBindViewHolder(YahooMovie.MyAdapter.ViewHolder holder, final int position) {
+        public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
 
             holder.name.setText(list.get(position).get("name"));
-            holder.cls.setText(list.get(position).get("type"));
+            holder.cls.setText(list.get(position).get("actor"));
 
 
             //設定圖片
@@ -138,15 +132,11 @@ public class YahooMovie extends Activity {
             holder.ll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(YahooMovie.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
-
-
                     ///Intent activity
-                    Intent intent = new Intent(YahooMovie.this,Detail.class);
+                    Intent intent = new Intent(Anime_Hot.this,Anime_detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
-                    intent.putExtra("type",list.get(position).get("type"));
                     intent.putExtra("link",list.get(position).get("link"));
-                    intent.putExtra("detail",list.get(position).get("detail"));
+                    intent.putExtra("detaillink",list.get(position).get("detaillink"));
                     startActivity(intent);
                 }
             });
@@ -171,7 +161,7 @@ public class YahooMovie extends Activity {
             }
         }
         void setImg(ImageView img, String ImgURL){
-            tools.imageLoading(YahooMovie.this,ImgURL,img);
+            tools.imageLoading(Anime_Hot.this,ImgURL,img);
         }
     }
 }
