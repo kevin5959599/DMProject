@@ -135,7 +135,7 @@ public class KoreanDrama_Hot extends Activity {
             holder.ll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ///Intent activity
+                    ///Intent activity0
                     Intent intent = new Intent(KoreanDrama_Hot.this,KRDrama_detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
                     intent.putExtra("actor",list.get(position).get("actor"));
