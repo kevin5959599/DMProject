@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 import com.example.user.movietest.R;
 public class MainActivity extends Activity {
-
+    //123
     RecyclerView recyclerView;
     MyAdapter myAdapter;
     Tools tools = new Tools();
