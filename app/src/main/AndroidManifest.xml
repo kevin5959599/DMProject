@@ -16,7 +16,7 @@
         <activity android:name=".KoreanDrama_Hot" />
         <activity android:name=".KRDrama_detail" />
         \
-        <activity android:name=".MainActivity" />
+        <activity android:name=".Movie_Hot" />
         <activity android:name=".Drama_Hot" />
         <activity android:name=".Choose">
             <intent-filter>

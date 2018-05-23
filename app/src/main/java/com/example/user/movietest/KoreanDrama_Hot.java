@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -136,7 +135,7 @@ public class KoreanDrama_Hot extends Activity {
                 @Override
                 public void onClick(View v) {
                     ///Intent activity
-                    Intent intent = new Intent(KoreanDrama_Hot.this,KRDrama_detail.class);
+                    Intent intent = new Intent(KoreanDrama_Hot.this,Drama_detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
                     intent.putExtra("actor",list.get(position).get("actor"));
                     intent.putExtra("link",list.get(position).get("link"));

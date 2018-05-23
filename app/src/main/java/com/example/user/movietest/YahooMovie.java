@@ -35,7 +35,7 @@ public class YahooMovie extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.movie_hot);
 
         recyclerView = (RecyclerView)findViewById(R.id.main_rv);
         new YahooMovie.HttpAsynTask().execute();
