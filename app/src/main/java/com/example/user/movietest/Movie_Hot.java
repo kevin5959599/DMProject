@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,7 +45,8 @@ public class Movie_Hot extends Activity {
     MyAdapter myAdapter;
     Tools tools = new Tools();
     ImageLoader imageLoader;
-    private DisplayImageOptions options;
+    DisplayImageOptions options;
+    EditText search;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +56,8 @@ public class Movie_Hot extends Activity {
         options = getSimpleOptions();
         imageLoader = ImageLoader.getInstance();
         recyclerView = (RecyclerView)findViewById(R.id.main_rv);
-        new HttpAsynTask().execute();
+        runLink("https://play.google.com/store/movies/top?hl=zh_TW");
+
     }
     private DisplayImageOptions getSimpleOptions() {
         DisplayImageOptions options = new DisplayImageOptions.Builder()
@@ -70,7 +73,8 @@ public class Movie_Hot extends Activity {
         return options;
     }
 
-        private class HttpAsynTask extends AsyncTask<String, Void, String> {
+    private void runLink(final String link){
+         class HttpAsynTask extends AsyncTask<String, Void, String> {
 
             @Override
             protected String doInBackground(String... params) {
@@ -87,7 +91,7 @@ public class Movie_Hot extends Activity {
                             ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
                             myAdapter = new MyAdapter(list);
 
-                            Document doc = Jsoup.connect("https://play.google.com/store/movies/top?hl=zh_TW").get();
+                            Document doc = Jsoup.connect(link).get();
                             Elements title = doc.select("div.details"); //抓取為tr且有class屬性的所有Tag
                             for(int i=0;i<20;i++){ //用FOR個別抓取選定的Tag內容
                                 HashMap<String,String> item = new HashMap<String,String>();
@@ -122,79 +126,82 @@ public class Movie_Hot extends Activity {
 
             }
         }
-        public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>{
+        new HttpAsynTask().execute();
+    }
 
-            ArrayList<HashMap<String,String>> list=new ArrayList<HashMap<String,String>>();
-            private ImageLoadingListener animateFirstListener = new AnimateFirstDisplayListener();
+    public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>{
 
-            public MyAdapter(ArrayList<HashMap<String,String>> newlist) {
-                // TODO 自动生成的构造函数存根
-                list = newlist;
-            }
-            public void addItem(HashMap<String, String> item) {
-                list.add(item);
-            }
+        ArrayList<HashMap<String,String>> list=new ArrayList<HashMap<String,String>>();
+        private ImageLoadingListener animateFirstListener = new AnimateFirstDisplayListener();
 
-            @Override
-            public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_rv,parent,false);
-                ViewHolder viewHolder = new ViewHolder(view);
-                return viewHolder;
-            }
+        public MyAdapter(ArrayList<HashMap<String,String>> newlist) {
+            // TODO 自动生成的构造函数存根
+            list = newlist;
+        }
+        public void addItem(HashMap<String, String> item) {
+            list.add(item);
+        }
 
-            @Override
-            public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
+        @Override
+        public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_rv,parent,false);
+            ViewHolder viewHolder = new ViewHolder(view);
+            return viewHolder;
+        }
 
-                holder.name.setText(list.get(position).get("name"));
-                holder.cls.setText(list.get(position).get("type"));
+        @Override
+        public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
 
-
-
-
-                //設定圖片
-                imageLoader.displayImage(list.get(position).get("link"), holder.link, options, animateFirstListener);
-
-                //
-                holder.ll.setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        //Toast.makeText(Movie_Hot.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
+            holder.name.setText(list.get(position).get("name"));
+            holder.cls.setText(list.get(position).get("type"));
 
 
-                        ///Intent activity
-                        Intent intent = new Intent(Movie_Hot.this,Detail.class);
-                        intent.putExtra("name",list.get(position).get("name"));
-                        intent.putExtra("type",list.get(position).get("type"));
-                        intent.putExtra("link",list.get(position).get("link"));
-                        intent.putExtra("detail",list.get(position).get("detail"));
-                        startActivity(intent);
-                    }
-                });
-            }
 
-            @Override
-            public int getItemCount() {
-                return list==null?0:list.size();
-            }
 
-            public class ViewHolder extends RecyclerView.ViewHolder {
-                public TextView name,cls;
-                public ImageView link;
-                public LinearLayout ll;
+            //設定圖片
+            imageLoader.displayImage(list.get(position).get("link"), holder.link, options, animateFirstListener);
 
-                public ViewHolder(View itemView) {
-                    super(itemView);
-                    name = (TextView) itemView.findViewById(R.id.name);
-                    cls = (TextView) itemView.findViewById(R.id.cls);
-                    link = (ImageView) itemView.findViewById(R.id.link);
-                    ll= (LinearLayout) itemView.findViewById(R.id.ll);
+            //
+            holder.ll.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    //Toast.makeText(Movie_Hot.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
+
+
+                    ///Intent activity
+                    Intent intent = new Intent(Movie_Hot.this,Detail.class);
+                    intent.putExtra("name",list.get(position).get("name"));
+                    intent.putExtra("type",list.get(position).get("type"));
+                    intent.putExtra("link",list.get(position).get("link"));
+                    intent.putExtra("detail",list.get(position).get("detail"));
+                    startActivity(intent);
                 }
-            }
-            void setImg(ImageView img, String ImgURL){
-                tools.imageLoading(Movie_Hot.this,ImgURL,img);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return list==null?0:list.size();
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public TextView name,cls;
+            public ImageView link;
+            public LinearLayout ll;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                name = (TextView) itemView.findViewById(R.id.name);
+                cls = (TextView) itemView.findViewById(R.id.cls);
+                link = (ImageView) itemView.findViewById(R.id.link);
+                ll= (LinearLayout) itemView.findViewById(R.id.ll);
             }
         }
+        void setImg(ImageView img, String ImgURL){
+            tools.imageLoading(Movie_Hot.this,ImgURL,img);
+        }
+    }
     private void init(){
         ImageLoaderConfiguration config = new ImageLoaderConfiguration
                 .Builder(this)
