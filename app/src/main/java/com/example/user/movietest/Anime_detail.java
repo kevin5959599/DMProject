@@ -2,6 +2,8 @@ package com.example.user.movietest;
 
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -17,6 +19,7 @@ public class Anime_detail extends Activity {
     Tools tools = new Tools();
     public TextView name,cls,detail;
     public ImageView detaillink;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +42,7 @@ public class Anime_detail extends Activity {
         setImg(detaillink,getIntent().getStringExtra("link"));
 
     }
+
     private class HttpAsynTask extends AsyncTask<String, Void, String> {
 
         @Override

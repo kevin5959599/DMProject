@@ -8,7 +8,7 @@ import android.widget.Button;
 
 public class Choose extends Activity {
 
-    Button mv, kr, jp, anime;
+    Button mv, kr, jp, anime, search;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +46,14 @@ public class Choose extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent(Choose.this,Anime_Hot.class);
                 intent.putExtra("type","jp");
+                startActivity(intent);
+            }
+        });
+        search = (Button) findViewById(R.id.search);
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Choose.this,Search.class);
                 startActivity(intent);
             }
         });

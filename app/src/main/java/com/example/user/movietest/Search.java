@@ -33,6 +33,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +43,11 @@ import java.util.List;
 
 import static com.example.user.movietest.R.mipmap.ic_launcher;
 
-public class Movie_Hot extends Activity {
+/**
+ * Created by Blue_bell on 2018/5/24.
+ */
+
+public class Search extends Activity{
 
     RecyclerView recyclerView;
     MyAdapter myAdapter;
@@ -53,25 +59,23 @@ public class Movie_Hot extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.movie_hot);
+        setContentView(R.layout.search);
         init();
         options = getSimpleOptions();
         imageLoader = ImageLoader.getInstance();
-        recyclerView = (RecyclerView)findViewById(R.id.main_rv);
-        runLink("https://play.google.com/store/movies/top?hl=zh_TW");
+        recyclerView = (RecyclerView)findViewById(R.id.search_rv);
+        String movie = getIntent().getStringExtra("movie");
+        //String movie = "蜘蛛人";
+        String urlStr = "" ;
+        try {
+            urlStr = URLEncoder.encode(movie, "Utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        System.out.println(urlStr);
+        runLink("https://play.google.com/store/search?q="+urlStr+"&c=movies");
 
-        Button btn = (Button) findViewById(R.id.search);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText editText = (EditText)findViewById(R.id.tx);
-                String input = editText.getText().toString();
-                Log.d("87878787",input);
-                Intent it = new Intent(Movie_Hot.this,Search.class);
-                it.putExtra("movie",input);
-                startActivity(it);
-            }
-        });
+
 
     }
     private DisplayImageOptions getSimpleOptions() {
@@ -89,7 +93,7 @@ public class Movie_Hot extends Activity {
     }
 
     private void runLink(final String link){
-         class HttpAsynTask extends AsyncTask<String, Void, String> {
+        class HttpAsynTask extends AsyncTask<String, Void, String> {
 
             @Override
             protected String doInBackground(String... params) {
@@ -107,8 +111,9 @@ public class Movie_Hot extends Activity {
                             myAdapter = new MyAdapter(list);
 
                             Document doc = Jsoup.connect(link).get();
+                            Log.d("878787878787",link);
                             Elements title = doc.select("div.details"); //抓取為tr且有class屬性的所有Tag
-                            for(int i=0;i<20;i++){ //用FOR個別抓取選定的Tag內容
+                            for(int i=0;i<title.size();i++){ //用FOR個別抓取選定的Tag內容
                                 HashMap<String,String> item = new HashMap<String,String>();
                                 String name = title.get(i).select("a.title").text() ;
                                 String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+
@@ -116,11 +121,14 @@ public class Movie_Hot extends Activity {
                                 String link = doc.select("img").get(i).attr("src");
 
                                 String detail = title.get(i).select("div.description").text();
-
                                 item.put("name",name);
                                 item.put("type",type);
                                 item.put("link",link);
                                 item.put("detail",detail);
+                                Log.d("11111111",name);
+                                Log.d("22222222",type);
+                                Log.d("33333333",link);
+                                Log.d("44444444",detail);
                                 myAdapter.addItem(item);
 
                             }
@@ -128,8 +136,8 @@ public class Movie_Hot extends Activity {
                                 @Override
                                 public void run() {
                                     recyclerView.setAdapter(myAdapter);
-                                    recyclerView.addItemDecoration(new DividerItemDecoration(Movie_Hot.this, DividerItemDecoration.VERTICAL));
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(Movie_Hot.this));
+                                    recyclerView.addItemDecoration(new DividerItemDecoration(Search.this, DividerItemDecoration.VERTICAL));
+                                    recyclerView.setLayoutManager(new LinearLayoutManager(Search.this));
                                 }
                             });
                         } catch (Exception e) {
@@ -159,8 +167,8 @@ public class Movie_Hot extends Activity {
 
         @Override
         public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_rv,parent,false);
-            ViewHolder viewHolder = new ViewHolder(view);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_rv,parent,false);
+            MyAdapter.ViewHolder viewHolder = new MyAdapter.ViewHolder(view);
             return viewHolder;
         }
 
@@ -185,7 +193,7 @@ public class Movie_Hot extends Activity {
 
 
                     ///Intent activity
-                    Intent intent = new Intent(Movie_Hot.this,Detail.class);
+                    Intent intent = new Intent(Search.this,Detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
                     intent.putExtra("type",list.get(position).get("type"));
                     intent.putExtra("link",list.get(position).get("link"));
@@ -214,7 +222,7 @@ public class Movie_Hot extends Activity {
             }
         }
         void setImg(ImageView img, String ImgURL){
-            tools.imageLoading(Movie_Hot.this,ImgURL,img);
+            tools.imageLoading(Search.this,ImgURL,img);
         }
     }
     private void init(){
