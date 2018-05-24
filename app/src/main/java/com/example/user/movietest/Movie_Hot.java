@@ -74,7 +74,7 @@ public class Movie_Hot extends Activity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
             }
-//
+
             @Override
             public void afterTextChanged(Editable s) {
                 myAdapter = null;
