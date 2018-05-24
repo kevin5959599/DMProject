@@ -7,7 +7,29 @@
     android:orientation="vertical"
     tools:context="com.example.user.movietest.Movie_Hot">
 
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
 
+        <ImageView
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_search" />
+
+        <EditText
+            android:textColorHint="#ffffff"
+            android:hint="請輸入電影"
+            android:id="@+id/search"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+    </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/main_rv"

@@ -1,26 +1,9 @@
 package com.example.user.movietest;
 
 import android.app.Activity;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by Blue_bell on 2018/5/20.
@@ -45,29 +28,23 @@ public class Detail extends Activity {
     }
     void initialView(){
 
-        String[] namesplit = getIntent().getStringExtra("name").split(" ");
-        for(int i=0;i<namesplit.length;i++){
-            System.out.println("array["+i+"] = "+namesplit[i]);
-            Log.d("5555555",namesplit[i]);
-        }
-        String newname = namesplit[1];
-
+        String namesplit = getIntent().getStringExtra("name");
 
         name = (TextView)findViewById(R.id.name);
         cls = (TextView) findViewById(R.id.cls);
         link = (ImageView) findViewById(R.id.link);
         detail = (TextView) findViewById(R.id.detail);
 
-        name.setText(newname);
-        cls.setText("("+getIntent().getStringExtra("type")+")");
+        if(namesplit.contains(". ")){
+            String [] newname = namesplit.split(" ");
+            name.setText(newname[1]);
+        }else{
+            name.setText(namesplit);
+        }
+
+        cls.setText(getIntent().getStringExtra("type").equals("")?"無分類":getIntent().getStringExtra("type"));
         detail.setText(getIntent().getStringExtra("detail"));
         link.setTag(getIntent().getStringExtra("link"));
         setImg(link,getIntent().getStringExtra("link"));
-        Log.d("9999999999",getIntent().getStringExtra("detail"));
     }
-
-
-
-
-
 }

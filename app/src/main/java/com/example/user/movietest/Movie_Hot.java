@@ -3,11 +3,14 @@ package com.example.user.movietest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,16 +50,42 @@ public class Movie_Hot extends Activity {
     ImageLoader imageLoader;
     DisplayImageOptions options;
     EditText search;
+    private DividerItemDecoration divide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.movie_hot);
+        divide = new DividerItemDecoration(Movie_Hot.this, DividerItemDecoration.VERTICAL);
         init();
         options = getSimpleOptions();
         imageLoader = ImageLoader.getInstance();
         recyclerView = (RecyclerView)findViewById(R.id.main_rv);
         runLink("https://play.google.com/store/movies/top?hl=zh_TW");
+
+        search = (EditText) findViewById(R.id.search);
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                myAdapter = null;
+                recyclerView.setAdapter(null);
+                if(search.getText().toString().equals("")){
+                    runLink("https://play.google.com/store/movies/top?hl=zh_TW");
+                }else {
+                    runLink("https://play.google.com/store/search?q=" + Uri.encode(search.getText().toString()) + "&c=movies&hl=zh_TW");
+                }
+            }
+        });
 
     }
     private DisplayImageOptions getSimpleOptions() {
@@ -93,7 +122,7 @@ public class Movie_Hot extends Activity {
 
                             Document doc = Jsoup.connect(link).get();
                             Elements title = doc.select("div.details"); //抓取為tr且有class屬性的所有Tag
-                            for(int i=0;i<20;i++){ //用FOR個別抓取選定的Tag內容
+                            for(int i=0;i<(title.size()<20?title.size():20);i++){ //用FOR個別抓取選定的Tag內容
                                 HashMap<String,String> item = new HashMap<String,String>();
                                 String name = title.get(i).select("a.title").text() ;
                                 String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+
@@ -101,8 +130,13 @@ public class Movie_Hot extends Activity {
                                 String link = doc.select("img").get(i).attr("src");
 
                                 String detail = title.get(i).select("div.description").text();
+                                if(name.contains(". ")){
+                                    String [] newname = name.split(" ");
+                                    item.put("name",newname[1]);
+                                }else{
+                                    item.put("name",name);
+                                }
 
-                                item.put("name",name);
                                 item.put("type",type);
                                 item.put("link",link);
                                 item.put("detail",detail);
@@ -112,8 +146,9 @@ public class Movie_Hot extends Activity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    recyclerView.removeItemDecoration(divide);
                                     recyclerView.setAdapter(myAdapter);
-                                    recyclerView.addItemDecoration(new DividerItemDecoration(Movie_Hot.this, DividerItemDecoration.VERTICAL));
+                                    recyclerView.addItemDecoration(divide);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(Movie_Hot.this));
                                 }
                             });
@@ -155,9 +190,6 @@ public class Movie_Hot extends Activity {
             holder.name.setText(list.get(position).get("name"));
             holder.cls.setText(list.get(position).get("type"));
 
-
-
-
             //設定圖片
             imageLoader.displayImage(list.get(position).get("link"), holder.link, options, animateFirstListener);
 
@@ -167,8 +199,6 @@ public class Movie_Hot extends Activity {
                 @Override
                 public void onClick(View v) {
                     //Toast.makeText(Movie_Hot.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
-
-
                     ///Intent activity
                     Intent intent = new Intent(Movie_Hot.this,Detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
