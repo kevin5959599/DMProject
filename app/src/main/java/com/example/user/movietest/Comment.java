@@ -43,7 +43,7 @@ public class Comment extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dm_comment);
+        setContentView(R.layout.dm_comment);//
 
         dmname = getIntent().getStringExtra("dmname");
 
