@@ -49,5 +49,6 @@ public class Choose extends Activity {
                 startActivity(intent);
             }
         });
+
     }
 }

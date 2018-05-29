@@ -3,6 +3,7 @@ package com.example.user.movietest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -11,8 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,58 +40,40 @@ import java.util.List;
 
 import static com.example.user.movietest.R.mipmap.ic_launcher;
 
-
-//2018/5/27 使用myvideo網站資料,
-//change?
-public class Anime_Hot extends Activity {
+public class Anime_Search extends Activity {
 
     RecyclerView recyclerView;
     MyAdapter myAdapter;
     Tools tools = new Tools();
     ImageLoader imageLoader;
-    EditText search;
-    private DisplayImageOptions options;
+    String movie = "",urlStr = "";
+    DisplayImageOptions options;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.anime_hot);
+        setContentView(R.layout.anime_search);
         init();
+        movie = getIntent().getStringExtra("movie");
+        urlStr = Uri.encode(movie);
         options = getSimpleOptions();
         imageLoader = ImageLoader.getInstance();
-        recyclerView = (RecyclerView)findViewById(R.id.anime_rv);
-        search = (EditText)findViewById(R.id.search);
+        recyclerView = (RecyclerView)findViewById(R.id.anime_search_rv);
+
         new HttpAsynTask().execute();
-        //runLink("http://myself-bbs.com/forum-113-1.html");
-
-        Button btn = (Button) findViewById(R.id.searchbutton);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String input = search.getText().toString();
-                if(search.getText().toString()!=null&&!search.getText().toString().equals("")) {
-                    Intent it = new Intent(Anime_Hot.this, Anime_Search.class);
-                    it.putExtra("movie", input);
-                    startActivity(it);
-                }else{
-                    Toast.makeText(Anime_Hot.this, "請輸入片名" , Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
     }
 
     private DisplayImageOptions getSimpleOptions() {
         DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(ic_launcher) //
-                .showImageForEmptyUri(ic_launcher)//
-                .showImageOnFail(ic_launcher)  //
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .imageScaleType(ImageScaleType.IN_SAMPLE_INT)
+                .showImageOnLoading(ic_launcher) //?置?片在下?期??示的?片
+                .showImageForEmptyUri(ic_launcher)//?置?片Uri?空或是??的?候?示的?片
+                .showImageOnFail(ic_launcher)  //?置?片加?/解??程中???候?示的?片
+                .cacheInMemory(true)//?置下?的?片是否?存在?存中
+                .cacheOnDisk(true)//?置下?的?片是否?存在SD卡中
+                .imageScaleType(ImageScaleType.IN_SAMPLE_INT)//?置?片以如何的??方式?示
                 .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
+                .bitmapConfig(Bitmap.Config.RGB_565)//?置?片的解??型
                 .build();//构建完成
         return options;
     }
@@ -115,43 +96,46 @@ public class Anime_Hot extends Activity {
                         ArrayList<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
                         myAdapter = new MyAdapter(list);
 
-                        Document doc = Jsoup.connect("https://www.myvideo.net.tw/TWM_Video/Portal/servlet_main.jsp?classID=cartoon&menuType=MainCategory&menuId=cartoon").get();
+                        String url = "https://www.myvideo.net.tw/TWM_Video/Portal/servlet_results.jsp?keyword="+urlStr+"&categoryId=cartoon";
+                        Document doc = Jsoup.connect(url).get();
 
-                        Element title = doc.select("div[class=slider_new_01]").get(0); //抓取為tr且有class屬性的所有Tag
+                        Elements title = doc.select("div[id=subContainer01_1]").select("li"); //抓取為tr且有class屬性的所有Tag
+                        if(title.size()>0) {
+                            for (int i = 0; i < title.size(); i++) { //用FOR個別抓取選定的Tag內容
+                                HashMap<String, String> item = new HashMap<String, String>();
+                                String name = title.select("h3").get(i).text();
+                                String link = title.select("img").get(i).attr("src");
+                                String detaillink = title.select("a").get(i).attr("href");
+                                item.put("name", name);
 
-                        for (int i = 0; i < 20; i++) { //用FOR個別抓取選定的Tag內容
-                            int j = i+2;
-                            int k = i+1;
-                            HashMap<String, String> item = new HashMap<String, String>();
-                            String name = title.select("li").get(i).select("h3").text();
+                                item.put("link", link);
+                                item.put("detaillink", "https://www.myvideo.net.tw/TWM_Video/Portal/" + detaillink);
 
-                            String detaillink = title.select("a").get(j).attr("href");
-                            String link = title.select("img").get(k).attr("src");
-                            System.out.println("array[" + i + "] = " + detaillink);
-                            item.put("name", name);
-
-
-                            item.put("link", link);
-                            item.put("detaillink", "https://www.myvideo.net.tw/TWM_Video/Portal/"+detaillink);
-
-                            myAdapter.addItem(item);
-
+                                myAdapter.addItem(item);
+                            }
+                        }else{
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(Anime_Search.this, "非常抱歉,找不到您要的動畫", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 recyclerView.setAdapter(myAdapter);
-                                recyclerView.addItemDecoration(new DividerItemDecoration(Anime_Hot.this, DividerItemDecoration.VERTICAL));
-                                recyclerView.setLayoutManager(new LinearLayoutManager(Anime_Hot.this));
+                                recyclerView.addItemDecoration(new DividerItemDecoration(Anime_Search.this, DividerItemDecoration.VERTICAL));
+                                recyclerView.setLayoutManager(new LinearLayoutManager(Anime_Search.this));
                             }
                         });
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
+
                         e.printStackTrace();
                     }
                 }
             }).start();
-
         }
     }
 
@@ -180,17 +164,14 @@ public class Anime_Hot extends Activity {
 
             holder.name.setText(list.get(position).get("name"));
             holder.cls.setText(list.get(position).get("actor"));
-
-
             //設定圖片
             imageLoader.displayImage(list.get(position).get("link"), holder.link, options, animateFirstListener);
-
             //
             holder.ll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     ///Intent activity
-                    Intent intent = new Intent(Anime_Hot.this,Anime_detail.class);
+                    Intent intent = new Intent(Anime_Search.this,Anime_detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
                     intent.putExtra("link",list.get(position).get("link"));
                     intent.putExtra("detaillink",list.get(position).get("detaillink"));
@@ -218,7 +199,7 @@ public class Anime_Hot extends Activity {
             }
         }
         void setImg(ImageView img, String ImgURL){
-            tools.imageLoading(Anime_Hot.this,ImgURL,img);
+            tools.imageLoading(Anime_Search.this,ImgURL,img);
         }
     }
     private void init(){
@@ -262,3 +243,4 @@ public class Anime_Hot extends Activity {
         }
     }
 }
+

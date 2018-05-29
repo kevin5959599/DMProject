@@ -26,7 +26,11 @@
         </activity>
         <activity android:name=".Drama_detail" />
         <activity android:name=".Anime_Hot" />
-        <activity android:name=".Anime_detail"></activity>
+        <activity android:name=".Anime_detail" />
+        <activity android:name=".DramaSearch" />
+        <activity android:name=".Comment" />
+        <activity android:name=".Anime_Search" />
+        <activity android:name=".DMRate"></activity>
     </application>
 
 </manifest>

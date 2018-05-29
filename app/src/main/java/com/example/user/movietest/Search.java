@@ -8,15 +8,14 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.cache.memory.impl.FIFOLimitedMemoryCache;
@@ -31,8 +30,10 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,118 +42,113 @@ import java.util.List;
 
 import static com.example.user.movietest.R.mipmap.ic_launcher;
 
+/**
+ * Created by Blue_bell on 2018/5/24.
+ */
 
-//2018/5/27 使用myvideo網站資料,
-//change?
-public class Anime_Hot extends Activity {
+public class Search extends Activity{
 
     RecyclerView recyclerView;
     MyAdapter myAdapter;
     Tools tools = new Tools();
     ImageLoader imageLoader;
+    DisplayImageOptions options;
     EditText search;
-    private DisplayImageOptions options;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.anime_hot);
+        setContentView(R.layout.search);
         init();
         options = getSimpleOptions();
         imageLoader = ImageLoader.getInstance();
-        recyclerView = (RecyclerView)findViewById(R.id.anime_rv);
-        search = (EditText)findViewById(R.id.search);
-        new HttpAsynTask().execute();
-        //runLink("http://myself-bbs.com/forum-113-1.html");
+        recyclerView = (RecyclerView)findViewById(R.id.search_rv);
+        String movie = getIntent().getStringExtra("movie");
+        //String movie = "蜘蛛人";
+        String urlStr = "" ;
+        try {
+            urlStr = URLEncoder.encode(movie, "Utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        System.out.println(urlStr);
+        runLink("https://play.google.com/store/search?q="+urlStr+"&c=movies");
 
-        Button btn = (Button) findViewById(R.id.searchbutton);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                String input = search.getText().toString();
-                if(search.getText().toString()!=null&&!search.getText().toString().equals("")) {
-                    Intent it = new Intent(Anime_Hot.this, Anime_Search.class);
-                    it.putExtra("movie", input);
-                    startActivity(it);
-                }else{
-                    Toast.makeText(Anime_Hot.this, "請輸入片名" , Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
     }
-
     private DisplayImageOptions getSimpleOptions() {
         DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(ic_launcher) //
-                .showImageForEmptyUri(ic_launcher)//
-                .showImageOnFail(ic_launcher)  //
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .imageScaleType(ImageScaleType.IN_SAMPLE_INT)
+                .showImageOnLoading(ic_launcher) //设置图片在下载期间显示的图片
+                .showImageForEmptyUri(ic_launcher)//设置图片Uri为空或是错误的时候显示的图片
+                .showImageOnFail(ic_launcher)  //设置图片加载/解码过程中错误时候显示的图片
+                .cacheInMemory(true)//设置下载的图片是否缓存在内存中
+                .cacheOnDisk(true)//设置下载的图片是否缓存在SD卡中
+                .imageScaleType(ImageScaleType.IN_SAMPLE_INT)//设置图片以如何的编码方式显示
                 .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
+                .bitmapConfig(Bitmap.Config.RGB_565)//设置图片的解码类型
                 .build();//构建完成
         return options;
     }
 
-    private class HttpAsynTask extends AsyncTask<String, Void, String> {
+    private void runLink(final String link){
+        class HttpAsynTask extends AsyncTask<String, Void, String> {
 
-        @Override
-        protected String doInBackground(String... params) {
-            return null;
-        }
+            @Override
+            protected String doInBackground(String... params) {
+                return null;
+            }
+            @Override
+            protected void onPostExecute(String result) {
 
-        @Override
-        protected void onPostExecute(String result) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            myAdapter = null;
+                            ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
+                            myAdapter = new MyAdapter(list);
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        myAdapter = null;
-                        ArrayList<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
-                        myAdapter = new MyAdapter(list);
+                            Document doc = Jsoup.connect(link).get();
+                            Log.d("878787878787",link);
+                            Elements title = doc.select("div.details"); //抓取為tr且有class屬性的所有Tag
+                            for(int i=0;i<title.size();i++){ //用FOR個別抓取選定的Tag內容
+                                HashMap<String,String> item = new HashMap<String,String>();
+                                String name = title.get(i).select("a.title").text() ;
+                                String type = title.get(i).select("div.subtitle-container").select("span[class=subtitle subtitle-movie-annotation]").text()+
+                                        title.get(i).select("div.subtitle-container").select("a[class=subtitle subtitle-movie-category]").text();//選擇第i個後選取所有為td的Tag
+                                String link = doc.select("img").get(i).attr("src");
 
-                        Document doc = Jsoup.connect("https://www.myvideo.net.tw/TWM_Video/Portal/servlet_main.jsp?classID=cartoon&menuType=MainCategory&menuId=cartoon").get();
+                                String detail = title.get(i).select("div.description").text();
+                                item.put("name",name);
+                                item.put("type",type);
+                                item.put("link",link);
+                                item.put("detail",detail);
+                                Log.d("11111111",name);
+                                Log.d("22222222",type);
+                                Log.d("33333333",link);
+                                Log.d("44444444",detail);
+                                myAdapter.addItem(item);
 
-                        Element title = doc.select("div[class=slider_new_01]").get(0); //抓取為tr且有class屬性的所有Tag
-
-                        for (int i = 0; i < 20; i++) { //用FOR個別抓取選定的Tag內容
-                            int j = i+2;
-                            int k = i+1;
-                            HashMap<String, String> item = new HashMap<String, String>();
-                            String name = title.select("li").get(i).select("h3").text();
-
-                            String detaillink = title.select("a").get(j).attr("href");
-                            String link = title.select("img").get(k).attr("src");
-                            System.out.println("array[" + i + "] = " + detaillink);
-                            item.put("name", name);
-
-
-                            item.put("link", link);
-                            item.put("detaillink", "https://www.myvideo.net.tw/TWM_Video/Portal/"+detaillink);
-
-                            myAdapter.addItem(item);
-
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                recyclerView.setAdapter(myAdapter);
-                                recyclerView.addItemDecoration(new DividerItemDecoration(Anime_Hot.this, DividerItemDecoration.VERTICAL));
-                                recyclerView.setLayoutManager(new LinearLayoutManager(Anime_Hot.this));
                             }
-                        });
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    recyclerView.setAdapter(myAdapter);
+                                    recyclerView.addItemDecoration(new DividerItemDecoration(Search.this, DividerItemDecoration.VERTICAL));
+                                    recyclerView.setLayoutManager(new LinearLayoutManager(Search.this));
+                                }
+                            });
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                     }
-                }
-            }).start();
+                }).start();
 
+            }
         }
+        new HttpAsynTask().execute();
     }
 
     public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>{
@@ -161,7 +157,7 @@ public class Anime_Hot extends Activity {
         private ImageLoadingListener animateFirstListener = new AnimateFirstDisplayListener();
 
         public MyAdapter(ArrayList<HashMap<String,String>> newlist) {
-            // TODO 自?生成的构造函?存根
+            // TODO 自动生成的构造函数存根
             list = newlist;
         }
         public void addItem(HashMap<String, String> item) {
@@ -170,7 +166,7 @@ public class Anime_Hot extends Activity {
 
         @Override
         public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.jpdrama_rv,parent,false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_rv,parent,false);
             MyAdapter.ViewHolder viewHolder = new MyAdapter.ViewHolder(view);
             return viewHolder;
         }
@@ -179,7 +175,9 @@ public class Anime_Hot extends Activity {
         public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
 
             holder.name.setText(list.get(position).get("name"));
-            holder.cls.setText(list.get(position).get("actor"));
+            holder.cls.setText(list.get(position).get("type"));
+
+
 
 
             //設定圖片
@@ -187,13 +185,18 @@ public class Anime_Hot extends Activity {
 
             //
             holder.ll.setOnClickListener(new View.OnClickListener() {
+
                 @Override
                 public void onClick(View v) {
+                    //Toast.makeText(Movie_Hot.this,list.get(position).get("name"), Toast.LENGTH_SHORT).show();
+
+
                     ///Intent activity
-                    Intent intent = new Intent(Anime_Hot.this,Anime_detail.class);
+                    Intent intent = new Intent(Search.this,Detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
+                    intent.putExtra("type",list.get(position).get("type"));
                     intent.putExtra("link",list.get(position).get("link"));
-                    intent.putExtra("detaillink",list.get(position).get("detaillink"));
+                    intent.putExtra("detail",list.get(position).get("detail"));
                     startActivity(intent);
                 }
             });
@@ -218,7 +221,7 @@ public class Anime_Hot extends Activity {
             }
         }
         void setImg(ImageView img, String ImgURL){
-            tools.imageLoading(Anime_Hot.this,ImgURL,img);
+            tools.imageLoading(Search.this,ImgURL,img);
         }
     }
     private void init(){
@@ -227,9 +230,9 @@ public class Anime_Hot extends Activity {
                 .memoryCacheExtraOptions(480, 800) //保存每個緩存圖片的最大寬高
                 .threadPriority(Thread.NORM_PRIORITY - 2) //線池中的緩存數
                 .denyCacheImageMultipleSizesInMemory() //禁止緩存多張圖片
-                .memoryCache(new FIFOLimitedMemoryCache(2 * 1024 * 1024))//?存策略
+                .memoryCache(new FIFOLimitedMemoryCache(2 * 1024 * 1024))//缓存策略
 //                .memoryCacheSize(50 * 1024 * 1024) //設置內存緩存的大小
-                .diskCacheFileNameGenerator(new Md5FileNameGenerator()) //?存文件名的保存方式
+                .diskCacheFileNameGenerator(new Md5FileNameGenerator()) //缓存文件名的保存方式
 //                .diskCacheSize(200 * 1024 * 1024) //緩存大小
                 .tasksProcessingOrder(QueueProcessingType.LIFO) //工作序列
                 .diskCacheFileCount(200) //緩存的文件數量
@@ -239,7 +242,7 @@ public class Anime_Hot extends Activity {
         }
     }
     /**
-     * ?片加?第一次?示?听器
+     * 图片加载第一次显示监听器
      * @author Administrator
      *
      */
@@ -251,10 +254,10 @@ public class Anime_Hot extends Activity {
         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
             if (loadedImage != null) {
                 ImageView imageView = (ImageView) view;
-                // 是否第一次?示
+                // 是否第一次显示
                 boolean firstDisplay = !displayedImages.contains(imageUri);
                 if (firstDisplay) {
-                    // ?片淡入效果
+                    // 图片淡入效果
                     FadeInBitmapDisplayer.animate(imageView, 200);
                     displayedImages.add(imageUri);
                 }

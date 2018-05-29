@@ -11,9 +11,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.cache.memory.impl.FIFOLimitedMemoryCache;
@@ -44,6 +47,8 @@ public class Drama_Hot extends Activity {
     MyAdapter myAdapter;
     Tools tools = new Tools();
     ImageLoader imageLoader;
+    Button searchbutton;
+    EditText search;
     private DisplayImageOptions options;
 
     @Override
@@ -54,6 +59,21 @@ public class Drama_Hot extends Activity {
         options = getSimpleOptions();
         imageLoader = ImageLoader.getInstance();
         recyclerView = (RecyclerView)findViewById(R.id.jpdrama_rv);
+        search = (EditText) findViewById(R.id.search);
+        searchbutton = (Button) findViewById(R.id.searchbutton);
+        searchbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (search.getText().toString().equals("")||search.getText().toString()==null){
+                    Toast.makeText(Drama_Hot.this, "請輸入片名", Toast.LENGTH_SHORT).show();
+                }else {
+                    Intent intent = new Intent(Drama_Hot.this, DramaSearch.class);
+                    intent.putExtra("search",search.getText().toString());
+                    intent.putExtra("type",getIntent().getStringExtra("type"));
+                    startActivity(intent);
+                }
+            }
+        });
         new HttpAsynTask().execute();
     }
     private DisplayImageOptions getSimpleOptions() {
@@ -87,17 +107,20 @@ public class Drama_Hot extends Activity {
                         ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
                         myAdapter = new MyAdapter(list);
 
-                        Document doc = Jsoup.connect("http://www.dramasq.com/"+getIntent().getStringExtra("type")+"/").get();
-                        Elements title = doc.select("div[class=drama sizing]"); //抓取為tr且有class屬性的所有Tag
-                        for(int i=0;i<title.size();i++){ //用FOR個別抓取選定的Tag內容
+                        Document doc = Jsoup.connect("http://www.playq.org/"+getIntent().getStringExtra("type")+"/").get();
+                        Elements title = doc.select("td[align=center]"); //抓取為tr且有class屬性的所有Tag
+                        for(int i=0;i<(title.size()>20?20:title.size());i++){ //用FOR個別抓取選定的Tag內容
                             HashMap<String,String> item = new HashMap<String,String>();
-                            String name = title.get(i).select("div[class=title sizing]").get(0).text();
-                            String [] link1 = title.get(i).select("div[class=imgflat imgcover sizing]").attr("style").split("\\(");//選擇第i個後選取所有為td的Tag
-                            String [] link2 = link1[1].split("\\)");
-                            String detaillink = title.get(i).select("a").attr("href");
+                            String name = title.get(i).select("a").get(1).attr("title");
+
+                            String detaillink = "http://www.playq.org/"+
+                                    title.get(i).select("a").get(1).attr("href");//選擇第i個後選取所有為td的Tag
+
+                            String link = "http://www.playq.org/"+
+                                    title.get(i).select("a").get(1).select("img").attr("src");
 
                             item.put("name",name);
-                            item.put("link",link2[0]);
+                            item.put("link",link);
                             item.put("detaillink",detaillink);
 
                             myAdapter.addItem(item);
@@ -152,7 +175,6 @@ public class Drama_Hot extends Activity {
             holder.name.setText(list.get(position).get("name"));
             holder.cls.setText(list.get(position).get("actor"));
 
-
             //設定圖片
             //holder.link.setTag(list.get(position).get("link"));
            // setImg(holder.link,list.get(position).get("link"));
@@ -167,6 +189,7 @@ public class Drama_Hot extends Activity {
                     Intent intent = new Intent(Drama_Hot.this,Drama_detail.class);
                     intent.putExtra("name",list.get(position).get("name"));
                     intent.putExtra("link",list.get(position).get("link"));
+                    intent.putExtra("type", getIntent().getStringExtra("type"));
                     intent.putExtra("detaillink",list.get(position).get("detaillink"));
                     startActivity(intent);
                 }

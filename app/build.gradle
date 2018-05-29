@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion "27.0.2"
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.example.user.movietest"
         minSdkVersion 21
@@ -18,7 +19,9 @@ android {
         }
     }
 }
-
+repositories {
+    mavenCentral();
+}
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.user.movietest.Comment">
+
+    <LinearLayout
+        android:background="#D8BFD8"
+        android:weightSum="10"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/comment_ll"
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:layout_marginLeft="20dp"
+            android:id="@+id/comment_et"
+            android:layout_weight="9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_marginRight="20dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/comment_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:background="@android:drawable/ic_menu_send"
+                android:backgroundTint="#ffffff"
+                android:text="發送" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_alignParentTop="true"
+        android:layout_above="@id/comment_ll"
+        android:id="@+id/dmcomment_rv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </android.support.v7.widget.RecyclerView>
+
+</RelativeLayout>
